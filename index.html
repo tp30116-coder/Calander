@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>粉藍簡約行事曆</title>
+    <style>
+        :root {
+            --primary-blue: #a2d2ff; /* 粉藍色 */
+            --dark-blue: #5a8fb9;
+            --bg-light: #f0f7ff;
+            --card-white: #ffffff;
+            --accent-pink: #ffafcc; /* 點綴粉 */
+            --text-main: #445a6d;
+        }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: #d0e4f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        /* 模擬手機外殼 */
+        .phone-shell {
+            width: 360px;
+            height: 680px;
+            background: var(--bg-light);
+            border-radius: 45px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #fff;
+        }
+
+        /* 頂部導覽 */
+        .nav-tabs {
+            display: flex;
+            background: var(--card-white);
+            padding: 15px 0 5px;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #b0c4d8;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            color: var(--dark-blue);
+            position: relative;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 30%;
+            width: 40%;
+            height: 3px;
+            background: var(--primary-blue);
+            border-radius: 10px;
+        }
+
+        /* 內容區域 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        /* 月曆樣式 */
+        .month-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--dark-blue);
+        }
+
+        .calendar-box {
+            background: var(--card-white);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(162, 210, 255, 0.2);
+        }
+
+        .grid-7 {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .grid-header {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            padding-bottom: 10px;
+        }
+
+        .date-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        .date-cell:hover {
+            background-color: var(--bg-light);
+        }
+
+        .date-cell.today {
+            background: var(--primary-blue);
+            color: white;
+            font-weight: bold;
+        }
+
+        .dot {
+            width: 4px;
+            height: 4px;
+            background: var(--accent-pink);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 4px;
+        }
+
+        /* 列表樣式 */
+        .task-item {
+            background: var(--card-white);
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            border-left: 5px solid var(--primary-blue);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+        }
+
+        .task-body { flex: 1; }
+        .task-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+        .task-date { font-size: 0.75rem; color: #99abbd; }
+        
+        .tag {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: #eef6ff;
+            color: var(--dark-blue);
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-shell">
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('cal', this)">月曆視圖</div>
+        <div class="nav-item" onclick="switchTab('list', this)">截止排序</div>
+    </div>
+
+    <div id="page-cal" class="main-content active">
+        <div class="month-title">2026年 5月</div>
+        <div class="calendar-box">
+            <div class="grid-7">
+                <div class="grid-header">日</div><div class="grid-header">一</div><div class="grid-header">二</div>
+                <div class="grid-header">三</div><div class="grid-header">四</div><div class="grid-header">五</div>
+                <div class="grid-header">六</div>
+            </div>
+            <div class="grid-7" id="calendar-body">
+                </div>
+        </div>
+    </div>
+
+    <div id="page-list" class="main-content">
+        <div id="sorted-tasks-container">
+            </div>
+    </div>
+</div>
+
+<script>
+    // 預設資料
+    const myTasks = [
+        { id: 1, title: "這份企劃要完成", date: "2026-05-03", type: "緊急" },
+        { id: 2, title: "去超商取貨", date: "2026-05-08", type: "生活" },
+        { id: 3, title: "跟朋友聚餐", date: "2026-05-15", type: "社交" },
+        { id: 4, title: "繳網路費", date: "2026-05-05", type: "待辦" },
+        { id: 5, title: "準備週報", date: "2026-05-22", type: "工作" }
+    ];
+
+    function switchTab(type, element) {
+        document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + type).classList.add('active');
+        element.classList.add('active');
+    }
+
+    function renderCalendar() {
+        const container = document.getElementById('calendar-body');
+        const startOffset = 5; // 2026/5/1 是週五
+        const daysInMonth = 31;
+        const today = 3; // 假設今天是 5/3
+
+        for (let i = 0; i < startOffset; i++) {
+            container.innerHTML += '<div></div>';
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `2026-05-${String(d).padStart(2, '0')}`;
+            const hasTask = myTasks.some(t => t.date === dateStr);
+            const isToday = (d === today) ? 'today' : '';
+            
+            container.innerHTML += `
+                <div class="date-cell ${isToday}">
+                    ${d}
+                    ${hasTask ? '<div class="dot"></div>' : ''}
+                </div>
+            `;
+        }
+    }
+
+    function renderSortedTasks() {
+        const container = document.getElementById('sorted-tasks-container');
+        // 核心邏輯：依照時間排序
+        const sorted = [...myTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        container.innerHTML = sorted.map(t => `
+            <div class="task-item">
+                <div class="task-body">
+                    <div class="task-title">${t.title}</div>
+                    <div class="task-date">截止日期：${t.date}</div>
+                </div>
+                <div class="tag">${t.type}</div>
+            </div>
+        `).join('');
+    }
+
+    // 啟動
+    renderCalendar();
+    renderSortedTasks();
+</script>
+
+</body>
+</html>
