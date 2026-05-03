@@ -3,309 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>粉藍簡約行事曆 v4 - 文字預覽版</title>
+    <title>粉藍精緻行事曆 - 專業版</title>
     <style>
         :root {
             --primary-blue: #a2d2ff;
-            --dark-blue: #5a8fb9;
-            --bg-light: #f0f7ff;
-            --card-white: #ffffff;
-            --accent-pink: #ffafcc;
-            --text-main: #445a6d;
-            --danger-red: #ff8b8b;
+            --soft-green: #b7e4c7;
+            --soft-pink: #ffc8dd;
+            --soft-purple: #cdb4db;
+            --bg-light: #f8f9fa;
+            --text-main: #2d3436;
+            --border-color: #eee;
         }
 
         body {
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            background-color: #d0e4f5;
+            font-family: 'PingFang TC', sans-serif;
+            background-color: #e9ecef;
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
         }
 
         .phone-shell {
-            width: 375px;
-            height: 750px;
-            background: var(--bg-light);
-            border-radius: 40px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border: 8px solid #fff;
-            position: relative;
+            width: 375px; height: 780px;
+            background: white; border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column;
+            overflow: hidden; position: relative;
+            border: 6px solid #333;
         }
 
-        .nav-tabs {
-            display: flex;
-            background: var(--card-white);
-            padding: 15px 0 5px;
-            z-index: 10;
+        /* 頂部標題 */
+        .header {
+            padding: 20px 20px 10px;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .month-selector { font-size: 1.4rem; font-weight: bold; color: var(--text-main); }
 
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #b0c4d8;
-        }
-
-        .nav-item.active {
-            color: var(--dark-blue);
-            position: relative;
-        }
-
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 30%; width: 40%; height: 3px;
-            background: var(--primary-blue);
-            border-radius: 10px;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .main-content.active { display: block; }
-
-        /* 月曆優化：文字預覽 */
-        .month-title { text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; color: var(--dark-blue); }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            background: #e0ecf8;
-            border: 1px solid #e0ecf8;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .grid-header {
-            background: var(--card-white);
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: var(--primary-blue);
-            padding: 8px 0;
-            text-align: center;
-        }
-
+        /* 月曆網格 */
+        .calendar-container { flex: 1; padding: 0 10px; overflow-y: auto; }
+        .grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+        .weekday { font-size: 0.7rem; color: #999; padding: 10px 0; }
+        
         .date-cell {
-            background: var(--card-white);
-            min-height: 75px;
-            padding: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: 0.2s;
+            min-height: 85px; border-top: 1px solid var(--border-color);
+            display: flex; flex-direction: column; align-items: center;
+            padding-top: 5px; cursor: pointer; transition: 0.2s;
         }
-
-        .date-cell:hover { background: #f9fcff; }
-
-        .date-num { margin-bottom: 4px; font-weight: 500; }
+        .date-cell:hover { background: #f0f7ff; }
+        .date-num { font-size: 0.8rem; margin-bottom: 4px; font-weight: 500; }
         .date-cell.today .date-num {
-            background: var(--primary-blue);
-            color: white;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .task-label {
-            width: 100%;
-            background: var(--primary-blue);
-            color: white;
-            font-size: 0.6rem;
-            padding: 2px 4px;
-            margin-bottom: 2px;
-            border-radius: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            box-sizing: border-box;
-        }
-
-        .task-label.pink { background: var(--accent-pink); }
-
-        /* 列表樣式 */
-        .task-item {
-            background: var(--card-white);
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-
-        /* 浮動按鈕與彈窗 */
-        .add-btn {
-            position: absolute;
-            bottom: 25px; right: 25px;
-            width: 50px; height: 50px;
-            background: var(--primary-blue);
-            color: white; border-radius: 50%;
+            background: #ff5e57; color: white;
+            width: 20px; height: 20px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 24px; border: none; z-index: 100;
-            box-shadow: 0 5px 15px rgba(162, 210, 255, 0.4);
         }
 
-        .modal {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 200;
+        /* 條狀任務標籤 */
+        .task-bar {
+            width: 90%; font-size: 0.55rem; padding: 2px 4px;
+            margin-bottom: 2px; border-radius: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            color: white; font-weight: bold;
         }
-        .modal.active { display: flex; }
-        .modal-card { background: white; width: 80%; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .modal-card input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #eee; border-radius: 8px; box-sizing: border-box; }
-        .save-btn { width: 100%; padding: 10px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; }
+        .bg-blue { background: #74b9ff; }
+        .bg-green { background: #55efc4; }
+        .bg-pink { background: #fd79a8; }
+        .bg-purple { background: #a29bfe; }
+
+        /* 當天事項預覽區 (點擊後出現) */
+        .day-detail {
+            background: var(--bg-light); padding: 15px 20px;
+            border-top: 1px solid #ddd; max-height: 200px; overflow-y: auto;
+        }
+        .detail-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; color: var(--dark-blue); }
+        .detail-item {
+            background: white; padding: 10px; border-radius: 10px;
+            margin-bottom: 8px; display: flex; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.85rem;
+        }
+
+        /* 底部選單 */
+        .bottom-nav {
+            height: 60px; background: white; border-top: 1px solid #eee;
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-icon { font-size: 1.2rem; color: #ccc; cursor: pointer; }
+        .nav-icon.active { color: #333; }
+
+        .add-btn {
+            position: absolute; bottom: 80px; right: 20px;
+            width: 50px; height: 50px; background: var(--text-main);
+            color: white; border-radius: 50%; font-size: 24px;
+            border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Modal */
+        .modal {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-card { background: white; width: 80%; padding: 20px; border-radius: 20px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-save { flex: 1; padding: 10px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="phone-shell">
-    <div class="nav-tabs">
-        <div class="nav-item active" onclick="switchTab('cal', this)">月記事</div>
-        <div class="nav-item" onclick="switchTab('list', this)">排序清單</div>
+    <div class="header">
+        <div class="month-selector">2026年5月 ▾</div>
+        <div style="font-size: 1.2rem;">🔍 ⚙️</div>
     </div>
 
-    <div id="page-cal" class="main-content active">
-        <div class="month-title">2026年 5月</div>
-        <div class="calendar-grid" id="calendar-grid">
-            <div class="grid-header">日</div><div class="grid-header">一</div><div class="grid-header">二</div>
-            <div class="grid-header">三</div><div class="grid-header">四</div><div class="grid-header">五</div>
-            <div class="grid-header">六</div>
+    <div class="calendar-container">
+        <div class="grid-7">
+            <div class="weekday">週日</div><div class="weekday">週一</div><div class="weekday">週二</div>
+            <div class="weekday">週三</div><div class="weekday">週四</div><div class="weekday">週五</div>
+            <div class="weekday">週六</div>
         </div>
+        <div class="grid-7" id="calendar-body"></div>
     </div>
 
-    <div id="page-list" class="main-content">
-        <div id="sorted-tasks-container"></div>
+    <div class="day-detail" id="day-detail">
+        <div class="detail-title" id="selected-date-text">請選擇日期</div>
+        <div id="detail-list"></div>
     </div>
 
-    <button class="add-btn" onclick="openAddModal()">+</button>
+    <div class="bottom-nav">
+        <div class="nav-icon active">📅</div>
+        <div class="nav-icon">📊</div>
+        <div class="nav-icon">🔔</div>
+        <div class="nav-icon">👤</div>
+    </div>
 
-    <div class="modal" id="add-modal">
+    <button class="add-btn" onclick="toggleModal(true)">+</button>
+
+    <div class="modal" id="modal">
         <div class="modal-card">
-            <h3 style="margin-top:0; color:var(--dark-blue)">新增記事</h3>
-            <input type="text" id="task-input" placeholder="要做什麼呢？">
-            <input type="date" id="date-input">
-            <button class="save-btn" onclick="addTask()">儲存</button>
-            <button class="save-btn" style="background:#ccc" onclick="toggleModal(false)">取消</button>
+            <h3>新增活動</h3>
+            <input type="text" id="task-title" placeholder="活動名稱">
+            <input type="date" id="task-date" value="2026-05-03">
+            <select id="task-color">
+                <option value="bg-blue">藍色 (工作)</option>
+                <option value="bg-green">綠色 (健康)</option>
+                <option value="bg-pink">粉色 (生活)</option>
+                <option value="bg-purple">紫色 (社交)</option>
+            </select>
+            <div class="btn-group">
+                <button class="btn-save" onclick="addTask()">儲存</button>
+                <button class="btn-save" style="background:#ccc" onclick="toggleModal(false)">取消</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    let myTasks = [
-        { id: 1, title: "繳電費", date: "2026-05-05" },
-        { id: 2, title: "看牙醫", date: "2026-05-05" },
-        { id: 3, title: "專案會議", date: "2026-05-12" }
+    let tasks = [
+        { id: 1, title: "帶湯圓去上課", date: "2026-05-06", color: "bg-green" },
+        { id: 2, title: "韓文課", date: "2026-05-07", color: "bg-pink" },
+        { id: 3, title: "勞動節", date: "2026-05-01", color: "bg-pink" },
+        { id: 4, title: "直播", date: "2026-05-04", color: "bg-blue" },
+        { id: 5, title: "韓文課", date: "2026-05-14", color: "bg-pink" }
     ];
 
-    function switchTab(type, element) {
-        document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + type).classList.add('active');
-        element.classList.add('active');
-    }
-
-    function toggleModal(show, date = "2026-05-03") {
-        document.getElementById('add-modal').classList.toggle('active', show);
-        if(show) document.getElementById('date-input').value = date;
-    }
-
-    function openAddModal(date) {
-        toggleModal(true, date);
-    }
+    function toggleModal(show) { document.getElementById('modal').style.display = show ? 'flex' : 'none'; }
 
     function addTask() {
-        const title = document.getElementById('task-input').value;
-        const date = document.getElementById('date-input').value;
-        if (title && date) {
-            myTasks.push({ id: Date.now(), title, date });
-            document.getElementById('task-input').value = '';
+        const title = document.getElementById('task-title').value;
+        const date = document.getElementById('task-date').value;
+        const color = document.getElementById('task-color').value;
+        if(title && date) {
+            tasks.push({ id: Date.now(), title, date, color });
             toggleModal(false);
-            renderAll();
+            renderCalendar();
+            showDetail(date);
         }
     }
 
-    function deleteTask(id) {
-        if(confirm("要刪除嗎？")) {
-            myTasks = myTasks.filter(t => t.id !== id);
-            renderAll();
-        }
+    function deleteTask(id, date) {
+        tasks = tasks.filter(t => t.id !== id);
+        renderCalendar();
+        showDetail(date);
     }
 
     function renderCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        // 保留標題頭部
-        const headers = Array.from(grid.querySelectorAll('.grid-header'));
-        grid.innerHTML = '';
-        headers.forEach(h => grid.appendChild(h));
-
-        const startOffset = 5; 
-        const daysInMonth = 31;
-        const todayNum = 3; 
-
-        for (let i = 0; i < startOffset; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'date-cell';
-            grid.appendChild(empty);
-        }
-
-        for (let d = 1; d <= daysInMonth; d++) {
+        const body = document.getElementById('calendar-body');
+        body.innerHTML = '';
+        const offset = 5; // 5/1 is Friday
+        for(let i=0; i<offset; i++) body.innerHTML += '<div class="date-cell"></div>';
+        
+        for(let d=1; d<=31; d++) {
             const dateStr = `2026-05-${String(d).padStart(2, '0')}`;
-            const cellTasks = myTasks.filter(t => t.date === dateStr);
+            const dayTasks = tasks.filter(t => t.date === dateStr);
+            const isToday = d === 3 ? 'today' : '';
             
-            const cell = document.createElement('div');
-            cell.className = `date-cell ${d === todayNum ? 'today' : ''}`;
-            cell.onclick = () => openAddModal(dateStr);
+            let taskHtml = dayTasks.slice(0, 3).map(t => `<div class="task-bar ${t.color}">${t.title}</div>`).join('');
             
-            cell.innerHTML = `<div class="date-num">${d}</div>`;
-            
-            cellTasks.forEach((t, idx) => {
-                const label = document.createElement('div');
-                label.className = `task-label ${idx % 2 === 0 ? '' : 'pink'}`;
-                label.innerText = t.title;
-                cell.appendChild(label);
-            });
-
-            grid.appendChild(cell);
+            body.innerHTML += `
+                <div class="date-cell ${isToday}" onclick="showDetail('${dateStr}')">
+                    <div class="date-num">${d}</div>
+                    ${taskHtml}
+                </div>
+            `;
         }
     }
 
-    function renderSortedTasks() {
-        const container = document.getElementById('sorted-tasks-container');
-        const sorted = [...myTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
-        container.innerHTML = sorted.map(t => `
-            <div class="task-item">
-                <div>
-                    <div style="font-weight:bold">${t.title}</div>
-                    <div style="font-size:0.7rem; color:#99a">${t.date}</div>
+    function showDetail(dateStr) {
+        document.getElementById('selected-date-text').innerText = dateStr + " 的事項";
+        const list = document.getElementById('detail-list');
+        const dayTasks = tasks.filter(t => t.date === dateStr);
+        
+        if(dayTasks.length === 0) {
+            list.innerHTML = '<p style="color:#999; font-size:0.8rem;">這天沒事喔，休息一下吧！</p>';
+        } else {
+            list.innerHTML = dayTasks.map(t => `
+                <div class="detail-item">
+                    <span>${t.title}</span>
+                    <button style="border:none; color:red; background:none;" onclick="deleteTask(${t.id}, '${dateStr}')">刪除</button>
                 </div>
-                <button style="border:none; background:none; color:#ccc; cursor:pointer" onclick="deleteTask(${t.id})">×</button>
-            </div>
-        `).join('');
+            `).join('');
+        }
     }
 
-    function renderAll() { renderCalendar(); renderSortedTasks(); }
-    renderAll();
+    renderCalendar();
+    showDetail("2026-05-03"); // 預設顯示今天
 </script>
 
 </body>
