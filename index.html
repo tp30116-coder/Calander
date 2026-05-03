@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>粉藍簡約行事曆 v3 - 支援刪除</title>
+    <title>粉藍簡約行事曆 v4 - 文字預覽版</title>
     <style>
         :root {
             --primary-blue: #a2d2ff;
@@ -23,14 +23,13 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: var(--text-main);
         }
 
         .phone-shell {
-            width: 360px;
-            height: 680px;
+            width: 375px;
+            height: 750px;
             background: var(--bg-light);
-            border-radius: 45px;
+            border-radius: 40px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             overflow: hidden;
             display: flex;
@@ -54,7 +53,6 @@
             font-weight: 600;
             cursor: pointer;
             color: #b0c4d8;
-            transition: 0.3s;
         }
 
         .nav-item.active {
@@ -65,140 +63,134 @@
         .nav-item.active::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 30%;
-            width: 40%;
-            height: 3px;
+            bottom: 0; left: 30%; width: 40%; height: 3px;
             background: var(--primary-blue);
             border-radius: 10px;
         }
 
         .main-content {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             display: none;
         }
 
         .main-content.active { display: block; }
 
-        /* 月曆樣式 */
-        .month-title { text-align: center; font-size: 1.3rem; font-weight: bold; margin-bottom: 20px; color: var(--dark-blue); }
-        .calendar-box { background: var(--card-white); border-radius: 20px; padding: 15px; box-shadow: 0 5px 15px rgba(162, 210, 255, 0.2); }
-        .grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
-        .grid-header { font-size: 0.75rem; font-weight: bold; color: var(--primary-blue); padding-bottom: 10px; }
-        .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; border-radius: 10px; position: relative; }
-        .date-cell.today { background: var(--primary-blue); color: white; font-weight: bold; }
-        .dot { width: 5px; height: 5px; background: var(--accent-pink); border-radius: 50%; position: absolute; bottom: 4px; }
+        /* 月曆優化：文字預覽 */
+        .month-title { text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; color: var(--dark-blue); }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background: #e0ecf8;
+            border: 1px solid #e0ecf8;
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
-        /* 任務列表樣式 */
-        .task-item {
+        .grid-header {
             background: var(--card-white);
-            margin-bottom: 12px;
-            padding: 15px;
-            border-radius: 18px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            padding: 8px 0;
+            text-align: center;
+        }
+
+        .date-cell {
+            background: var(--card-white);
+            min-height: 75px;
+            padding: 4px;
             display: flex;
-            align-items: center;
-            border-left: 5px solid var(--primary-blue);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
-            position: relative;
-            animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .task-body { flex: 1; }
-        .task-title { font-size: 0.95rem; font-weight: 600; }
-        .task-date { font-size: 0.75rem; color: #99abbd; margin-top: 4px; }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ddd;
-            font-size: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 0.75rem;
             cursor: pointer;
-            padding: 5px;
-            transition: color 0.2s;
+            transition: 0.2s;
         }
-        .delete-btn:hover { color: var(--danger-red); }
 
-        /* 浮動按鈕 */
-        .add-btn {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            width: 56px;
-            height: 56px;
+        .date-cell:hover { background: #f9fcff; }
+
+        .date-num { margin-bottom: 4px; font-weight: 500; }
+        .date-cell.today .date-num {
             background: var(--primary-blue);
             color: white;
-            border-radius: 50%;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 8px 20px rgba(162, 210, 255, 0.5);
-            cursor: pointer;
-            border: none;
-            z-index: 100;
+            border-radius: 50%;
         }
 
-        /* 彈窗樣式 */
+        .task-label {
+            width: 100%;
+            background: var(--primary-blue);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+        }
+
+        .task-label.pink { background: var(--accent-pink); }
+
+        /* 列表樣式 */
+        .task-item {
+            background: var(--card-white);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        /* 浮動按鈕與彈窗 */
+        .add-btn {
+            position: absolute;
+            bottom: 25px; right: 25px;
+            width: 50px; height: 50px;
+            background: var(--primary-blue);
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; border: none; z-index: 100;
+            box-shadow: 0 5px 15px rgba(162, 210, 255, 0.4);
+        }
+
         .modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.9);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
             z-index: 200;
         }
         .modal.active { display: flex; }
-        .modal-card {
-            background: white;
-            width: 80%;
-            padding: 25px;
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        .modal-card input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            box-sizing: border-box;
-            background: var(--bg-light);
-        }
-        .save-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary-blue);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .modal-card { background: white; width: 80%; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .modal-card input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #eee; border-radius: 8px; box-sizing: border-box; }
+        .save-btn { width: 100%; padding: 10px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="phone-shell">
     <div class="nav-tabs">
-        <div class="nav-item active" onclick="switchTab('cal', this)">月曆視圖</div>
-        <div class="nav-item" onclick="switchTab('list', this)">截止排序</div>
+        <div class="nav-item active" onclick="switchTab('cal', this)">月記事</div>
+        <div class="nav-item" onclick="switchTab('list', this)">排序清單</div>
     </div>
 
     <div id="page-cal" class="main-content active">
         <div class="month-title">2026年 5月</div>
-        <div class="calendar-box">
-            <div class="grid-7">
-                <div class="grid-header">日</div><div class="grid-header">一</div><div class="grid-header">二</div>
-                <div class="grid-header">三</div><div class="grid-header">四</div><div class="grid-header">五</div>
-                <div class="grid-header">六</div>
-            </div>
-            <div class="grid-7" id="calendar-body"></div>
+        <div class="calendar-grid" id="calendar-grid">
+            <div class="grid-header">日</div><div class="grid-header">一</div><div class="grid-header">二</div>
+            <div class="grid-header">三</div><div class="grid-header">四</div><div class="grid-header">五</div>
+            <div class="grid-header">六</div>
         </div>
     </div>
 
@@ -206,23 +198,24 @@
         <div id="sorted-tasks-container"></div>
     </div>
 
-    <button class="add-btn" onclick="toggleModal(true)">+</button>
+    <button class="add-btn" onclick="openAddModal()">+</button>
 
     <div class="modal" id="add-modal">
         <div class="modal-card">
-            <h3 style="margin-top:0; color:var(--dark-blue)">新增工作項目</h3>
+            <h3 style="margin-top:0; color:var(--dark-blue)">新增記事</h3>
             <input type="text" id="task-input" placeholder="要做什麼呢？">
-            <input type="date" id="date-input" value="2026-05-03">
-            <button class="save-btn" onclick="addTask()">儲存記事</button>
+            <input type="date" id="date-input">
+            <button class="save-btn" onclick="addTask()">儲存</button>
             <button class="save-btn" style="background:#ccc" onclick="toggleModal(false)">取消</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 初始資料，加入 ID 方便刪除
     let myTasks = [
-        { id: Date.now(), title: "範例：繳手機費", date: "2026-05-10" }
+        { id: 1, title: "繳電費", date: "2026-05-05" },
+        { id: 2, title: "看牙醫", date: "2026-05-05" },
+        { id: 3, title: "專案會議", date: "2026-05-12" }
     ];
 
     function switchTab(type, element) {
@@ -232,84 +225,86 @@
         element.classList.add('active');
     }
 
-    function toggleModal(show) {
+    function toggleModal(show, date = "2026-05-03") {
         document.getElementById('add-modal').classList.toggle('active', show);
+        if(show) document.getElementById('date-input').value = date;
+    }
+
+    function openAddModal(date) {
+        toggleModal(true, date);
     }
 
     function addTask() {
         const title = document.getElementById('task-input').value;
         const date = document.getElementById('date-input').value;
-
         if (title && date) {
-            myTasks.push({ 
-                id: Date.now(), // 使用時間戳記當作唯一 ID
-                title: title, 
-                date: date 
-            });
+            myTasks.push({ id: Date.now(), title, date });
             document.getElementById('task-input').value = '';
             toggleModal(false);
             renderAll();
-        } else {
-            alert("請填寫名稱和日期喔！");
         }
     }
 
-    // 核心功能：刪除工作
     function deleteTask(id) {
-        if(confirm("確定要刪除這個事項嗎？")) {
-            myTasks = myTasks.filter(task => task.id !== id);
+        if(confirm("要刪除嗎？")) {
+            myTasks = myTasks.filter(t => t.id !== id);
             renderAll();
         }
     }
 
     function renderCalendar() {
-        const container = document.getElementById('calendar-body');
-        container.innerHTML = '';
+        const grid = document.getElementById('calendar-grid');
+        // 保留標題頭部
+        const headers = Array.from(grid.querySelectorAll('.grid-header'));
+        grid.innerHTML = '';
+        headers.forEach(h => grid.appendChild(h));
+
         const startOffset = 5; 
         const daysInMonth = 31;
-        const today = 3; 
+        const todayNum = 3; 
 
-        for (let i = 0; i < startOffset; i++) { container.innerHTML += '<div></div>'; }
+        for (let i = 0; i < startOffset; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'date-cell';
+            grid.appendChild(empty);
+        }
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `2026-05-${String(d).padStart(2, '0')}`;
-            const hasTask = myTasks.some(t => t.date === dateStr);
-            const isToday = (d === today) ? 'today' : '';
+            const cellTasks = myTasks.filter(t => t.date === dateStr);
             
-            container.innerHTML += `
-                <div class="date-cell ${isToday}">
-                    ${d}
-                    ${hasTask ? '<div class="dot"></div>' : ''}
-                </div>
-            `;
+            const cell = document.createElement('div');
+            cell.className = `date-cell ${d === todayNum ? 'today' : ''}`;
+            cell.onclick = () => openAddModal(dateStr);
+            
+            cell.innerHTML = `<div class="date-num">${d}</div>`;
+            
+            cellTasks.forEach((t, idx) => {
+                const label = document.createElement('div');
+                label.className = `task-label ${idx % 2 === 0 ? '' : 'pink'}`;
+                label.innerText = t.title;
+                cell.appendChild(label);
+            });
+
+            grid.appendChild(cell);
         }
     }
 
     function renderSortedTasks() {
         const container = document.getElementById('sorted-tasks-container');
         const sorted = [...myTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        if (sorted.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#b0c4d8; margin-top:50px;">目前沒有待辦事項喔！</p>';
-            return;
-        }
-
         container.innerHTML = sorted.map(t => `
             <div class="task-item">
-                <div class="task-body">
-                    <div class="task-title">${t.title}</div>
-                    <div class="task-date">📅 ${t.date}</div>
+                <div>
+                    <div style="font-weight:bold">${t.title}</div>
+                    <div style="font-size:0.7rem; color:#99a">${t.date}</div>
                 </div>
-                <button class="delete-btn" onclick="deleteTask(${t.id})">×</button>
+                <button style="border:none; background:none; color:#ccc; cursor:pointer" onclick="deleteTask(${t.id})">×</button>
             </div>
         `).join('');
     }
 
-    function renderAll() {
-        renderCalendar();
-        renderSortedTasks();
-    }
-
+    function renderAll() { renderCalendar(); renderSortedTasks(); }
     renderAll();
 </script>
 
