@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>粉藍簡約行事曆 v2</title>
+    <title>粉藍簡約行事曆 v3 - 支援刪除</title>
     <style>
         :root {
             --primary-blue: #a2d2ff;
@@ -12,6 +12,7 @@
             --card-white: #ffffff;
             --accent-pink: #ffafcc;
             --text-main: #445a6d;
+            --danger-red: #ff8b8b;
         }
 
         body {
@@ -100,14 +101,27 @@
             align-items: center;
             border-left: 5px solid var(--primary-blue);
             box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            position: relative;
             animation: fadeIn 0.4s ease;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .task-body { flex: 1; }
         .task-title { font-size: 0.95rem; font-weight: 600; }
         .task-date { font-size: 0.75rem; color: #99abbd; margin-top: 4px; }
 
-        /* 浮動新增按鈕 */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ddd;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        .delete-btn:hover { color: var(--danger-red); }
+
+        /* 浮動按鈕 */
         .add-btn {
             position: absolute;
             bottom: 30px;
@@ -127,7 +141,7 @@
             z-index: 100;
         }
 
-        /* 輸入視窗彈出層 */
+        /* 彈窗樣式 */
         .modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -160,3 +174,144 @@
             padding: 12px;
             background: var(--primary-blue);
             color: white;
+            border: none;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-shell">
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('cal', this)">月曆視圖</div>
+        <div class="nav-item" onclick="switchTab('list', this)">截止排序</div>
+    </div>
+
+    <div id="page-cal" class="main-content active">
+        <div class="month-title">2026年 5月</div>
+        <div class="calendar-box">
+            <div class="grid-7">
+                <div class="grid-header">日</div><div class="grid-header">一</div><div class="grid-header">二</div>
+                <div class="grid-header">三</div><div class="grid-header">四</div><div class="grid-header">五</div>
+                <div class="grid-header">六</div>
+            </div>
+            <div class="grid-7" id="calendar-body"></div>
+        </div>
+    </div>
+
+    <div id="page-list" class="main-content">
+        <div id="sorted-tasks-container"></div>
+    </div>
+
+    <button class="add-btn" onclick="toggleModal(true)">+</button>
+
+    <div class="modal" id="add-modal">
+        <div class="modal-card">
+            <h3 style="margin-top:0; color:var(--dark-blue)">新增工作項目</h3>
+            <input type="text" id="task-input" placeholder="要做什麼呢？">
+            <input type="date" id="date-input" value="2026-05-03">
+            <button class="save-btn" onclick="addTask()">儲存記事</button>
+            <button class="save-btn" style="background:#ccc" onclick="toggleModal(false)">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 初始資料，加入 ID 方便刪除
+    let myTasks = [
+        { id: Date.now(), title: "範例：繳手機費", date: "2026-05-10" }
+    ];
+
+    function switchTab(type, element) {
+        document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + type).classList.add('active');
+        element.classList.add('active');
+    }
+
+    function toggleModal(show) {
+        document.getElementById('add-modal').classList.toggle('active', show);
+    }
+
+    function addTask() {
+        const title = document.getElementById('task-input').value;
+        const date = document.getElementById('date-input').value;
+
+        if (title && date) {
+            myTasks.push({ 
+                id: Date.now(), // 使用時間戳記當作唯一 ID
+                title: title, 
+                date: date 
+            });
+            document.getElementById('task-input').value = '';
+            toggleModal(false);
+            renderAll();
+        } else {
+            alert("請填寫名稱和日期喔！");
+        }
+    }
+
+    // 核心功能：刪除工作
+    function deleteTask(id) {
+        if(confirm("確定要刪除這個事項嗎？")) {
+            myTasks = myTasks.filter(task => task.id !== id);
+            renderAll();
+        }
+    }
+
+    function renderCalendar() {
+        const container = document.getElementById('calendar-body');
+        container.innerHTML = '';
+        const startOffset = 5; 
+        const daysInMonth = 31;
+        const today = 3; 
+
+        for (let i = 0; i < startOffset; i++) { container.innerHTML += '<div></div>'; }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `2026-05-${String(d).padStart(2, '0')}`;
+            const hasTask = myTasks.some(t => t.date === dateStr);
+            const isToday = (d === today) ? 'today' : '';
+            
+            container.innerHTML += `
+                <div class="date-cell ${isToday}">
+                    ${d}
+                    ${hasTask ? '<div class="dot"></div>' : ''}
+                </div>
+            `;
+        }
+    }
+
+    function renderSortedTasks() {
+        const container = document.getElementById('sorted-tasks-container');
+        const sorted = [...myTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        if (sorted.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#b0c4d8; margin-top:50px;">目前沒有待辦事項喔！</p>';
+            return;
+        }
+
+        container.innerHTML = sorted.map(t => `
+            <div class="task-item">
+                <div class="task-body">
+                    <div class="task-title">${t.title}</div>
+                    <div class="task-date">📅 ${t.date}</div>
+                </div>
+                <button class="delete-btn" onclick="deleteTask(${t.id})">×</button>
+            </div>
+        `).join('');
+    }
+
+    function renderAll() {
+        renderCalendar();
+        renderSortedTasks();
+    }
+
+    renderAll();
+</script>
+
+</body>
+</html>
